@@ -22,6 +22,27 @@ const closeBookingBtn = document.getElementById("closeBooking");
 
 let calendar = null;
 
+// Edmonton timezone
+function getEdmontonTime(year, month, day, hour, minute) {
+  const utcDate = new Date(Date.UTC(year, month, day, hour, minute));
+
+  const edmontonParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Edmonton",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(utcDate);
+
+  const parts = Object.fromEntries(edmontonParts.map(p => [p.type, p.value]));
+
+  // Превращаем в ISO строку и создаём дату с таймзоной Edmonton
+  return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:00`);
+
+}
+
 // Generate time options from 7:00 to 21:00 every 30 minutes
 function generateTimeOptions() {
   startTimeSelect.innerHTML = "";
@@ -133,7 +154,7 @@ bookingForm.addEventListener("submit", async (e) => {
 
   const [year, month, day] = dateStr.split("-").map(Number);
   const [hours, minutes] = startTimeStr.split(":").map(Number);
-  const startTime = new Date(year, month - 1, day, hours, minutes);
+  const startTime = getEdmontonTime(year, month - 1, day, hours, minutes);
   const endTime = new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
 
   // Check for conflicts
