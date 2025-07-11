@@ -4,13 +4,14 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAIz4Lcnioo1DAh_S11O1jKC5nyo_ggX5w",
-  authDomain: "tennis-schedule-ltc.firebaseapp.com",
-  projectId: "tennis-schedule-ltc",
-  storageBucket: "tennis-schedule-ltc.firebasestorage.app",
-  messagingSenderId: "913456855993",
-  appId: "1:913456855993:web:906283fedb4373bf291468"
+  apiKey: "AIzaSyDrhv1mxgda0wrBZeLyCakG5sPlFVT2w8s",
+  authDomain: "booking-site-b80ac.firebaseapp.com",
+  projectId: "booking-site-b80ac",
+  storageBucket: "booking-site-b80ac.firebasestorage.app",
+  messagingSenderId: "328839671227",
+  appId: "1:328839671227:web:b6d7ccc7825c7e11b6289e"
 };
+
 
 const app = initializeApp(firebaseConfig);
 
