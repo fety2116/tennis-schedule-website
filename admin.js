@@ -7,8 +7,7 @@ import {
   updateDoc,
   doc,
   addDoc,
-  Timestamp,
-  orderBy
+  Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -19,7 +18,6 @@ const blockDate = document.getElementById("blockDate");
 const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
-const blockType = document.getElementById("blockType");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // Проверка авторизации и загрузка данных
@@ -39,7 +37,7 @@ logoutBtn.addEventListener("click", async () => {
   window.location.href = "login.html";
 });
 
-// Генерация опций времени для блокировки
+// Генерация опций времени для блокировки/ручного бронирования
 function generateTimeOptions() {
   blockTime.innerHTML = "";
   const startHour = 6,
@@ -103,23 +101,26 @@ async function loadPendingBookings() {
   }
 }
 
-// Загрузка confirmed заявок с сортировкой по времени
+// Загрузка confirmed заявок, отсортированных по дате и времени
 async function loadConfirmedBookings() {
   try {
-    const q = query(
-      collection(db, "slots"),
-      where("status", "==", "confirmed"),
-      orderBy("time", "asc")
-    );
+    const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
     const snapshot = await getDocs(q);
 
     confirmedTable.innerHTML = "";
     if (snapshot.empty) {
-      confirmedTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
+      confirmedTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
       return;
     }
 
-    snapshot.forEach((docSnap) => {
+    // Сортируем документы по дате
+    const sortedDocs = snapshot.docs.slice().sort((a, b) => {
+      const aDate = a.data().time.toDate();
+      const bDate = b.data().time.toDate();
+      return aDate - bDate;
+    });
+
+    sortedDocs.forEach((docSnap) => {
       const slot = docSnap.data();
       const start = slot.time.toDate();
       const row = document.createElement("tr");
@@ -130,7 +131,6 @@ async function loadConfirmedBookings() {
         <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
-        <td>${slot.type || "-"}</td>
       `;
 
       confirmedTable.appendChild(row);
@@ -165,18 +165,17 @@ bookingsTable.addEventListener("click", async (e) => {
   }
 });
 
-// Обработка формы блокировки времени
+// Обработка формы блокировки времени / ручного бронирования
 blockForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const dateStr = blockDate.value;
   const timeStr = blockTime.value; // "HH:MM"
   const duration = parseInt(blockDuration.value);
-  const status = blockStatus.value;
-  const type = blockType.value;
+  const status = blockStatus.value; // объединенный статус/тип урока
 
-  if (!dateStr || !timeStr || !duration || duration <= 0 || !status || !type) {
-    alert("Please fill all fields with valid data.");
+  if (!dateStr || !timeStr || !duration || duration <= 0 || !status) {
+    alert("Please fill all required fields.");
     return;
   }
 
@@ -184,7 +183,6 @@ blockForm.addEventListener("submit", async (e) => {
   const hour = parseInt(hourStr);
   const minute = parseInt(minuteStr);
 
-  // Проверка времени в нужном диапазоне
   const totalMinutes = hour * 60 + minute;
   if (totalMinutes < (6 * 60 + 30) || totalMinutes > (21 * 60)) {
     alert("Time must be between 06:30 and 21:00.");
@@ -198,11 +196,10 @@ blockForm.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "slots"), {
       time: Timestamp.fromDate(startTime),
       duration,
-      status,
-      type
+      status
     });
 
-    alert(`Time with status "${status}" and type "${type}" saved successfully.`);
+    alert(`Slot with status/type "${status}" saved successfully.`);
     blockForm.reset();
     blockDuration.value = "30";
 
