@@ -4,7 +4,9 @@ import {
   query,
   where,
   getDocs,
-  addDoc
+  updateDoc,
+  addDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const calendarEl = document.getElementById("calendar");
@@ -19,6 +21,9 @@ const modal = document.getElementById("modal");
 const closeBookingBtn = document.getElementById("closeBooking");
 
 let calendar = null;
+
+// Подключаем luxon (предполагается, что в HTML подключён через <script> тег)
+const DateTime = luxon.DateTime;
 
 // Generate time options from 7:00 to 21:00 every 30 minutes
 function generateTimeOptions() {
@@ -92,7 +97,7 @@ async function loadSlotsAndRenderCalendar() {
 
   calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "timeGridWeek",
-    timeZone: "America/Edmonton", // важно!
+    timeZone: "America/Edmonton",
     headerToolbar: {
       left: "prev,next today",
       center: "title",
@@ -132,8 +137,13 @@ bookingForm.addEventListener("submit", async (e) => {
   const [year, month, day] = dateStr.split("-").map(Number);
   const [hours, minutes] = startTimeStr.split(":").map(Number);
 
-  // Просто создаём локальное время — FullCalendar всё покажет в нужной зоне
-  const startTime = new Date(year, month - 1, day, hours, minutes);
+  // Создаем дату в часовом поясе Edmonton и конвертируем в UTC для сохранения
+  const edmontonDateTime = DateTime.fromObject(
+    { year, month, day, hour: hours, minute: minutes },
+    { zone: "America/Edmonton" }
+  );
+  const startTime = edmontonDateTime.toUTC().toJSDate();
+
   const endTime = new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
 
   // Check for conflicts
@@ -188,3 +198,4 @@ modal.addEventListener("click", (e) => {
 generateTimeOptions();
 restrictPastDates();
 loadSlotsAndRenderCalendar();
+
