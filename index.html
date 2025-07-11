@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson Booking</title>
+
+  <!-- Шрифт -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Верхняя черная полоска -->
+  <div class="top-bar"></div>
+
+  <!-- Основной контент -->
+  <main class="main-content">
+    <div id="calendar"></div>
+    <button id="openBooking" class="floating-booking-btn">Book Now</button>
+  </main>
+
+  <!-- Модальное окно -->
+  <div id="modal" class="modal-overlay" style="display: none;">
+    <form id="bookingForm">
+      <h2>Book a Lesson</h2>
+      <label for="bookingDate">Date:</label>
+      <input type="date" id="bookingDate" required />
+
+      <label for="startTime">Start Time:</label>
+      <select id="startTime"></select>
+
+      <label for="name">Name:</label>
+      <input type="text" id="name" required />
+
+      <label for="contact">Contact:</label>
+      <input type="text" id="contact" required />
+
+      <label for="duration">Duration:</label>
+      <select id="duration">
+        <option value="0.5">30 minutes</option>
+        <option value="1">1 hour</option>
+        <option value="1.5">1.5 hours</option>
+        <option value="2">2 hours</option>
+      </select>
+
+      <button type="submit">Submit Booking</button>
+      <button type="button" id="closeBooking">Cancel</button>
+    </form>
+  </div>
+
+  <!-- Нижняя черная полоска -->
+  <footer class="bottom-bar">
+    <p>Contact: yana.fetisova74@gmail.com | +1 (587) 917-6473</p>
+  </footer>
+
+  <!-- Скрипты -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>

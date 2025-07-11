@@ -1,0 +1,202 @@
+/* Base reset и шрифты */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'EB Garamond', serif; /* твой выбранный шрифт */
+  background: #f9f9fb;
+  color: #333;
+  overflow: hidden; /* запрещаем скролл страницы */
+}
+
+/* Верхняя черная тонкая полоска */
+.top-bar {
+  height: 20px;
+  background-color: #000000;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 11000;
+}
+
+/* Нижняя черная широкая полоска */
+.bottom-bar {
+  height: 60px;
+  background-color: #000000;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  color: #3a9b3f; /* зеленый цвет */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1rem;
+  z-index: 11000;
+}
+
+/* Основной контент между полосками */
+.main-content {
+  position: fixed;
+  top: 20px;    /* ниже верхней полоски */
+  bottom: 60px; /* выше нижней полоски */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white; /* или #004400 если хочешь зеленый фон */
+  padding: 1rem;
+  overflow: hidden; /* важное, чтобы не было скролла */
+}
+
+/* Календарь */
+#calendar {
+  max-width: 1200px;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  font-size: 15px; /* уменьшенный шрифт */
+  overflow: hidden;
+}
+
+/* Таймслоты и ячейки */
+.fc-daygrid-day {
+  height: 100px !important;
+  padding: 0.15rem 0.25rem !important;
+}
+
+.fc-daygrid-event {
+  font-size: 20px !important;
+  padding: 2px 4px !important;
+  line-height: 1.1 !important;
+}
+
+.fc-timegrid-slot-label,
+.fc-timegrid-slot {
+  font-size: 13px !important;
+  height: 15px !important;
+}
+
+.fc-toolbar-title {
+  font-size: 16px !important;
+  padding: 4px 8px !important;
+}
+
+/* Зелёные кнопки календаря */
+.fc .fc-button {
+  background-color: #2e7d32;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.fc .fc-button:hover {
+  background-color: #1b5e20;
+}
+
+/* Плавающая кнопка Book Now */
+.floating-booking-btn {
+  position: fixed;
+  bottom: 80px; /* немного выше нижней полоски */
+  right: 2rem;
+  background-color: #007700; /* темно-зеленый */
+  color: white;
+  border: none;
+  padding: 0.9rem 1.4rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  cursor: pointer;
+  z-index: 12000; /* выше полосок */
+  transition: background-color 0.2s ease;
+}
+
+.floating-booking-btn:hover {
+  background-color: #005500;
+}
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 13000; /* очень поверх всего */
+}
+
+/* Форма бронирования */
+#bookingForm {
+  background: white;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 1rem;
+  font-family: 'EB Garamond', serif;
+}
+
+#bookingForm label {
+  font-weight: 600;
+  color: #004400; /* зеленый оттенок */
+}
+
+#bookingForm input,
+#bookingForm select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+  font-family: 'EB Garamond', serif;
+}
+
+#bookingForm button {
+  background-color: #007700;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: 'EB Garamond', serif;
+}
+
+#bookingForm button:hover {
+  background-color: #005500;
+}
+
+/* FullCalendar кастомизация цветов */
+.fc-button {
+  background-color: #007700 !important;
+  border-color: #004400 !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+.fc-button:hover, 
+.fc-button:focus {
+  background-color: #004400 !important;
+  border-color: #002200 !important;
+  color: white !important;
+}
+
+/* Уменьшенный размер шрифтов в календаре */
+.fc-toolbar-title {
+  font-family: 'EB Garamond', serif;
+  font-weight: 600;
+  font-size: 20px !important;
+}
