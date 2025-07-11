@@ -94,6 +94,7 @@ async function loadSlotsAndRenderCalendar() {
 
   calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "timeGridWeek",
+    timeZone: "America/Edmonton",
     headerToolbar: {
       left: "prev,next today",
       center: "title",
