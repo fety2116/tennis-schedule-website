@@ -1,19 +1,9 @@
+// admin.js
 import { db, auth } from "./firebase.js";
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  addDoc,
-  Timestamp
+  collection, query, where, getDocs, updateDoc, doc, addDoc, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const bookingsTable = document.querySelector("#bookingsTable tbody");
 const confirmedTable = document.querySelector("#confirmedTable tbody");
@@ -22,19 +12,53 @@ const blockDate = document.getElementById("blockDate");
 const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
+const logoutBtn = document.getElementById("logoutBtn");
 
-// Проверка авторизации
+// Проверка авторизации и загрузка данных
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // Пользователь авторизован
+  if (!user) {
+    alert("Access denied. Please login.");
+    window.location.href = "login.html";
+  } else {
     loadPendingBookings();
     loadConfirmedBookings();
-  } else {
-    // Не авторизован — редирект на логин
-    window.location.href = "login.html";
   }
 });
 
+// Выход из админки
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+});
+
+// Генерация опций времени для блокировки
+function generateTimeOptions() {
+  blockTime.innerHTML = "";
+  const startHour = 6,
+    startMinute = 30;
+  const endHour = 21,
+    endMinute = 0;
+
+  let current = new Date();
+  current.setHours(startHour, startMinute, 0, 0);
+
+  const endTime = new Date();
+  endTime.setHours(endHour, endMinute, 0, 0);
+
+  while (current <= endTime) {
+    const h = current.getHours().toString().padStart(2, "0");
+    const m = current.getMinutes().toString().padStart(2, "0");
+    const option = document.createElement("option");
+    option.value = `${h}:${m}`;
+    option.textContent = `${h}:${m}`;
+    blockTime.appendChild(option);
+
+    current.setMinutes(current.getMinutes() + 30);
+  }
+}
+generateTimeOptions();
+
+// Загрузка pending заявок
 async function loadPendingBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "pending"));
@@ -71,6 +95,7 @@ async function loadPendingBookings() {
   }
 }
 
+// Загрузка confirmed заявок
 async function loadConfirmedBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
