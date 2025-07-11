@@ -14,8 +14,7 @@ const bookingsTable = document.querySelector("#bookingsTable tbody");
 const confirmedTable = document.querySelector("#confirmedTable tbody");
 const blockForm = document.getElementById("blockForm");
 const blockDate = document.getElementById("blockDate");
-const blockHour = document.getElementById("blockHour");
-const blockMinute = document.getElementById("blockMinute");
+const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 
@@ -31,7 +30,7 @@ async function loadPendingBookings() {
       return;
     }
 
-    snapshot.forEach(docSnap => {
+    snapshot.forEach((docSnap) => {
       const slot = docSnap.data();
       const start = slot.time.toDate();
       const row = document.createElement("tr");
@@ -68,7 +67,7 @@ async function loadConfirmedBookings() {
       return;
     }
 
-    snapshot.forEach(docSnap => {
+    snapshot.forEach((docSnap) => {
       const slot = docSnap.data();
       const start = slot.time.toDate();
       const row = document.createElement("tr");
@@ -118,23 +117,23 @@ blockForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const dateStr = blockDate.value;
-  const hour = parseInt(blockHour.value);
-  const minute = parseInt(blockMinute.value);
+  const timeStr = blockTime.value; // "HH:MM"
   const duration = parseInt(blockDuration.value);
   const status = blockStatus.value;
 
-  if (!dateStr || isNaN(hour) || isNaN(minute) || !duration || duration <= 0 || !status) {
+  if (!dateStr || !timeStr || !duration || duration <= 0 || !status) {
     alert("Please fill all fields with valid data.");
     return;
   }
 
-  if (hour < 0 || hour > 23) {
-    alert("Hour must be between 0 and 23.");
-    return;
-  }
+  const [hourStr, minuteStr] = timeStr.split(":");
+  const hour = parseInt(hourStr);
+  const minute = parseInt(minuteStr);
 
-  if (minute !== 0 && minute !== 30) {
-    alert("Minute must be 0 or 30.");
+  // Проверка времени в нужном диапазоне
+  const totalMinutes = hour * 60 + minute;
+  if (totalMinutes < (6 * 60 + 30) || totalMinutes > (21 * 60)) {
+    alert("Time must be between 06:30 and 21:00.");
     return;
   }
 
@@ -163,4 +162,3 @@ blockForm.addEventListener("submit", async (e) => {
 // Инициализация загрузки
 loadPendingBookings();
 loadConfirmedBookings();
-
