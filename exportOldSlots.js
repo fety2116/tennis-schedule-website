@@ -1,11 +1,11 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore,
   collection,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 🔒 Старый config (тот, который был до booking-site-b80ac)
+// ✅ Старый firebaseConfig (тот, который работал раньше)
 const firebaseConfig = {
   apiKey: "AIzaSyAQcwegDSfjfuoeKq7s42Eexxj_gGfyQro",
   authDomain: "tennis-schedule-ltc.firebaseapp.com",
@@ -15,7 +15,8 @@ const firebaseConfig = {
   appId: "1:913456855993:web:89af8a5df62d4fda291468"
 };
 
-const app = initializeApp(firebaseConfig);
+// 🛡 Инициализация только если еще не инициализировано
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function exportSlots() {
@@ -23,7 +24,6 @@ async function exportSlots() {
   const data = [];
   snapshot.forEach(doc => {
     const slot = doc.data();
-    // Преобразуем timestamp в ISO строку
     data.push({
       ...slot,
       time: slot.time?.toDate?.().toISOString() || null
