@@ -11,6 +11,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const bookingsTable = document.querySelector("#bookingsTable tbody");
+const confirmedTable = document.querySelector("#confirmedTable tbody");
 const blockForm = document.getElementById("blockForm");
 const blockDate = document.getElementById("blockDate");
 const blockHour = document.getElementById("blockHour");
@@ -19,12 +20,17 @@ const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 
 // Загрузка заявок со статусом "pending"
-async function loadBookings() {
+async function loadPendingBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "pending"));
     const snapshot = await getDocs(q);
 
     bookingsTable.innerHTML = "";
+    if (snapshot.empty) {
+      bookingsTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No pending bookings</td></tr>`;
+      return;
+    }
+
     snapshot.forEach(docSnap => {
       const slot = docSnap.data();
       const start = slot.time.toDate();
@@ -44,41 +50,66 @@ async function loadBookings() {
 
       bookingsTable.appendChild(row);
     });
-
-    if (snapshot.empty) {
-      const emptyRow = document.createElement("tr");
-      emptyRow.innerHTML = `<td colspan="6" style="text-align:center; color:#666;">No pending bookings</td>`;
-      bookingsTable.appendChild(emptyRow);
-    }
   } catch (error) {
-    console.error("Error loading bookings:", error);
-    alert("Failed to load bookings. Check console for details.");
+    console.error("Error loading pending bookings:", error);
+    alert("Failed to load pending bookings. Check console.");
   }
 }
 
-// Обработчик кнопок Confirm и Reject
+// Загрузка заявок со статусом "confirmed"
+async function loadConfirmedBookings() {
+  try {
+    const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
+    const snapshot = await getDocs(q);
+
+    confirmedTable.innerHTML = "";
+    if (snapshot.empty) {
+      confirmedTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
+      return;
+    }
+
+    snapshot.forEach(docSnap => {
+      const slot = docSnap.data();
+      const start = slot.time.toDate();
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${slot.bookedBy || ""}</td>
+        <td>${slot.contact || ""}</td>
+        <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${slot.duration} min</td>
+        <td>${slot.status}</td>
+      `;
+
+      confirmedTable.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading confirmed bookings:", error);
+    alert("Failed to load confirmed bookings. Check console.");
+  }
+}
+
+// Обработка кнопок Confirm и Reject
 bookingsTable.addEventListener("click", async (e) => {
   const id = e.target.dataset.id;
   if (!id) return;
 
-  if (e.target.classList.contains("confirm")) {
-    try {
-      const docRef = doc(db, "slots", id);
+  try {
+    const docRef = doc(db, "slots", id);
+
+    if (e.target.classList.contains("confirm")) {
       await updateDoc(docRef, { status: "confirmed" });
-      await loadBookings();
-    } catch (error) {
-      console.error("Error confirming booking:", error);
-      alert("Failed to confirm booking. Check console for details.");
-    }
-  } else if (e.target.classList.contains("reject")) {
-    try {
-      const docRef = doc(db, "slots", id);
+    } else if (e.target.classList.contains("reject")) {
       await updateDoc(docRef, { status: "rejected" });
-      await loadBookings();
-    } catch (error) {
-      console.error("Error rejecting booking:", error);
-      alert("Failed to reject booking. Check console for details.");
+    } else {
+      return;
     }
+
+    await loadPendingBookings();
+    await loadConfirmedBookings();
+  } catch (error) {
+    console.error("Error updating booking status:", error);
+    alert("Failed to update booking status. Check console.");
   }
 });
 
@@ -120,12 +151,16 @@ blockForm.addEventListener("submit", async (e) => {
     alert(`Time with status "${status}" saved successfully.`);
     blockForm.reset();
     blockDuration.value = "30";
+
+    await loadPendingBookings();
+    await loadConfirmedBookings();
   } catch (error) {
     console.error("Error saving slot:", error);
-    alert("Failed to save slot. Check console for details.");
+    alert("Failed to save slot. Check console.");
   }
 });
 
-// Начальная загрузка заявок
-loadBookings();
+// Инициализация загрузки
+loadPendingBookings();
+loadConfirmedBookings();
 
