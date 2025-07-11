@@ -1,7 +1,14 @@
-// admin.js
 import { db, auth } from "./firebase.js";
 import {
-  collection, query, where, getDocs, updateDoc, doc, addDoc, Timestamp
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+  addDoc,
+  Timestamp,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -12,6 +19,7 @@ const blockDate = document.getElementById("blockDate");
 const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
+const blockType = document.getElementById("blockType");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // Проверка авторизации и загрузка данных
@@ -95,15 +103,19 @@ async function loadPendingBookings() {
   }
 }
 
-// Загрузка confirmed заявок
+// Загрузка confirmed заявок с сортировкой по времени
 async function loadConfirmedBookings() {
   try {
-    const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
+    const q = query(
+      collection(db, "slots"),
+      where("status", "==", "confirmed"),
+      orderBy("time", "asc")
+    );
     const snapshot = await getDocs(q);
 
     confirmedTable.innerHTML = "";
     if (snapshot.empty) {
-      confirmedTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
+      confirmedTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
       return;
     }
 
@@ -118,6 +130,7 @@ async function loadConfirmedBookings() {
         <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
+        <td>${slot.type || "-"}</td>
       `;
 
       confirmedTable.appendChild(row);
@@ -160,8 +173,9 @@ blockForm.addEventListener("submit", async (e) => {
   const timeStr = blockTime.value; // "HH:MM"
   const duration = parseInt(blockDuration.value);
   const status = blockStatus.value;
+  const type = blockType.value;
 
-  if (!dateStr || !timeStr || !duration || duration <= 0 || !status) {
+  if (!dateStr || !timeStr || !duration || duration <= 0 || !status || !type) {
     alert("Please fill all fields with valid data.");
     return;
   }
@@ -184,10 +198,11 @@ blockForm.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "slots"), {
       time: Timestamp.fromDate(startTime),
       duration,
-      status
+      status,
+      type
     });
 
-    alert(`Time with status "${status}" saved successfully.`);
+    alert(`Time with status "${status}" and type "${type}" saved successfully.`);
     blockForm.reset();
     blockDuration.value = "30";
 
