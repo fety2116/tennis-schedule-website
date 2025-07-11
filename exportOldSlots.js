@@ -5,7 +5,7 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ✅ Старый firebaseConfig (тот, который работал раньше)
+// Старый firebaseConfig (тот, что был раньше)
 const firebaseConfig = {
   apiKey: "AIzaSyAQcwegDSfjfuoeKq7s42Eexxj_gGfyQro",
   authDomain: "tennis-schedule-ltc.firebaseapp.com",
@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: "1:913456855993:web:89af8a5df62d4fda291468"
 };
 
-// 🛡 Инициализация только если еще не инициализировано
+// Инициализация только если еще не инициализировано
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
