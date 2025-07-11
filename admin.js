@@ -10,6 +10,14 @@ import {
   Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const auth = getAuth();
+
 const bookingsTable = document.querySelector("#bookingsTable tbody");
 const confirmedTable = document.querySelector("#confirmedTable tbody");
 const blockForm = document.getElementById("blockForm");
@@ -18,7 +26,18 @@ const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 
-// Загрузка заявок со статусом "pending"
+// Проверяем авторизацию пользователя и загружаем данные
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Пользователь авторизован — загружаем данные
+    loadPendingBookings();
+    loadConfirmedBookings();
+  } else {
+    // Пользователь не авторизован — перенаправляем на login
+    window.location.href = "login.html";
+  }
+});
+
 async function loadPendingBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "pending"));
@@ -55,7 +74,6 @@ async function loadPendingBookings() {
   }
 }
 
-// Загрузка заявок со статусом "confirmed"
 async function loadConfirmedBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
@@ -158,7 +176,3 @@ blockForm.addEventListener("submit", async (e) => {
     alert("Failed to save slot. Check console.");
   }
 });
-
-// Инициализация загрузки
-loadPendingBookings();
-loadConfirmedBookings();
