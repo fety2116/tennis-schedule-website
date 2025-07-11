@@ -33,7 +33,8 @@
       margin-bottom: 3rem;
     }
 
-    table th, table td {
+    table th,
+    table td {
       border: 1px solid #ccc;
       padding: 0.75rem;
       text-align: left;
@@ -62,7 +63,7 @@
       background: white;
       padding: 1.5rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       max-width: 500px;
       margin: 0 auto;
     }
@@ -72,7 +73,8 @@
       margin: 1rem 0 0.5rem;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 0.5rem;
       font-size: 1rem;
@@ -134,14 +136,8 @@
       <label for="blockDate">Date:</label>
       <input type="date" id="blockDate" required />
 
-      <label for="blockHour">Hour:</label>
-      <select id="blockHour" required></select>
-
-      <label for="blockMinute">Minute:</label>
-      <select id="blockMinute" required>
-        <option value="0">00</option>
-        <option value="30">30</option>
-      </select>
+      <label for="blockTime">Time:</label>
+      <select id="blockTime" required></select>
 
       <label for="blockDuration">Duration:</label>
       <select id="blockDuration" required>
@@ -163,13 +159,34 @@
   </section>
 
   <script>
-    const blockHour = document.getElementById("blockHour");
-    for (let h = 0; h < 24; h++) {
-      const option = document.createElement("option");
-      option.value = h;
-      option.textContent = h.toString().padStart(2, "0");
-      blockHour.appendChild(option);
+    const blockTime = document.getElementById("blockTime");
+
+    function generateTimeOptions() {
+      blockTime.innerHTML = "";
+      const startHour = 6,
+        startMinute = 30;
+      const endHour = 21,
+        endMinute = 0;
+
+      let current = new Date();
+      current.setHours(startHour, startMinute, 0, 0);
+
+      const endTime = new Date();
+      endTime.setHours(endHour, endMinute, 0, 0);
+
+      while (current <= endTime) {
+        const h = current.getHours().toString().padStart(2, "0");
+        const m = current.getMinutes().toString().padStart(2, "0");
+        const option = document.createElement("option");
+        option.value = `${h}:${m}`;
+        option.textContent = `${h}:${m}`;
+        blockTime.appendChild(option);
+
+        current.setMinutes(current.getMinutes() + 30);
+      }
     }
+
+    generateTimeOptions();
   </script>
 
   <script type="module" src="admin.js"></script>
