@@ -115,6 +115,7 @@
           <th>Date & Time</th>
           <th>Duration</th>
           <th>Status</th>
+          <th>Lesson Type</th>
         </tr>
       </thead>
       <tbody>
@@ -147,6 +148,15 @@
         <option value="confirmed">Confirmed</option>
       </select>
 
+      <label for="blockType">Lesson Type:</label>
+      <select id="blockType" required>
+        <option value="private">Private Lesson</option>
+        <option value="summercamp">Summer Camp</option>
+        <option value="mens">Men's Lesson</option>
+        <option value="womens">Women's Lesson</option>
+        <option value="kids">Kids Lesson</option>
+      </select>
+
       <button type="submit" id="blockTimeBtn">Block Time</button>
     </form>
   </section>
@@ -154,5 +164,3 @@
   <script type="module" src="admin.js"></script>
 </body>
 </html>
-
-
