@@ -16,8 +16,9 @@ const blockDate = document.getElementById("blockDate");
 const blockHour = document.getElementById("blockHour");
 const blockMinute = document.getElementById("blockMinute");
 const blockDuration = document.getElementById("blockDuration");
+const blockStatus = document.getElementById("blockStatus");
 
-// Загружаем заявки со статусом "pending"
+// Загрузка заявок со статусом "pending"
 async function loadBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "pending"));
@@ -82,8 +83,6 @@ bookingsTable.addEventListener("click", async (e) => {
 });
 
 // Обработка формы блокировки времени
-const blockStatus = document.getElementById("blockStatus");
-
 blockForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -95,6 +94,16 @@ blockForm.addEventListener("submit", async (e) => {
 
   if (!dateStr || isNaN(hour) || isNaN(minute) || !duration || duration <= 0 || !status) {
     alert("Please fill all fields with valid data.");
+    return;
+  }
+
+  if (hour < 0 || hour > 23) {
+    alert("Hour must be between 0 and 23.");
+    return;
+  }
+
+  if (minute !== 0 && minute !== 30) {
+    alert("Minute must be 0 or 30.");
     return;
   }
 
@@ -119,3 +128,4 @@ blockForm.addEventListener("submit", async (e) => {
 
 // Начальная загрузка заявок
 loadBookings();
+
