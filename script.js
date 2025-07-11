@@ -7,7 +7,7 @@ import {
   addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// Берём Luxon из глобального объекта (в html должен быть подключён перед этим скриптом)
+// Берём Luxon из глобального пространства (подключён в html)
 const DateTime = luxon.DateTime;
 
 const calendarEl = document.getElementById("calendar");
@@ -23,7 +23,7 @@ const closeBookingBtn = document.getElementById("closeBooking");
 
 let calendar = null;
 
-// Генерация опций времени с 7:00 до 21:00 каждые 30 минут
+// Генерируем временные опции с 7:00 до 21:00 с шагом 30 мин
 function generateTimeOptions() {
   startTimeSelect.innerHTML = "";
   for (let hour = 7; hour <= 21; hour++) {
@@ -37,18 +37,15 @@ function generateTimeOptions() {
   }
 }
 
-// Ограничиваем выбор прошедших дат (мин.дата = сегодня)
+// Ограничиваем выбор прошедших дат в форме
 function restrictPastDates() {
   const today = new Date();
   bookingDateInput.min = today.toISOString().split("T")[0];
 }
 
-// Загружаем слоты из Firestore и показываем их в календаре
+// Загружаем слоты из Firestore и рендерим календарь
 async function loadSlotsAndRenderCalendar() {
-  const q = query(
-    collection(db, "slots"),
-    where("status", "in", ["pending", "confirmed", "blocked"])
-  );
+  const q = query(collection(db, "slots"), where("status", "in", ["pending", "confirmed", "blocked"]));
   const snapshot = await getDocs(q);
   const events = [];
 
@@ -90,6 +87,8 @@ async function loadSlotsAndRenderCalendar() {
       end,
       color,
     });
+
+    console.log(`Loaded event ${docSnap.id}: ${start.toString()} - ${end.toString()}`);
   });
 
   if (calendar) {
@@ -98,7 +97,7 @@ async function loadSlotsAndRenderCalendar() {
 
   calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "timeGridWeek",
-    timeZone: "America/Edmonton",
+    timeZone: "America/Edmonton", // важно — задаём правильную зону
     headerToolbar: {
       left: "prev,next today",
       center: "title",
@@ -115,7 +114,7 @@ async function loadSlotsAndRenderCalendar() {
   calendar.render();
 }
 
-// Проверяем пересечение двух временных интервалов
+// Проверяем пересечение двух интервалов времени
 function isOverlap(start1, end1, start2, end2) {
   return start1 < end2 && start2 < end1;
 }
@@ -135,7 +134,7 @@ bookingForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  // Создаём DateTime в зоне America/Edmonton с помощью Luxon
+  // Используем Luxon для создания даты/времени в зоне Edmonton
   const [year, month, day] = dateStr.split("-").map(Number);
   const [hours, minutes] = startTimeStr.split(":").map(Number);
 
@@ -144,27 +143,19 @@ bookingForm.addEventListener("submit", async (e) => {
     { zone: "America/Edmonton" }
   );
 
-  const startTime = startDT.toJSDate();
+  console.log("Booking start datetime (ISO):", startDT.toISO());
+
+  const startTime = startDT.toJSDate(); // JS Date в UTC
   const endDT = startDT.plus({ hours: durationHours });
   const endTime = endDT.toJSDate();
 
-  // Проверяем пересечения со слотами в Firestore
-  const q = query(
-    collection(db, "slots"),
-    where("status", "in", ["pending", "confirmed", "blocked"])
-  );
+  // Проверяем пересечения с занятыми слотами
+  const q = query(collection(db, "slots"), where("status", "in", ["pending", "confirmed", "blocked"]));
   const busySnapshot = await getDocs(q);
 
   for (const docSnap of busySnapshot.docs) {
     const slot = docSnap.data();
-    let slotStart = null;
-    if (slot.time && typeof slot.time.toDate === "function") {
-      slotStart = slot.time.toDate();
-    } else if (slot.time) {
-      slotStart = new Date(slot.time);
-    }
-    if (!slotStart) continue;
-
+    const slotStart = slot.time.toDate();
     const slotDuration = slot.duration || 30;
     const slotEnd = new Date(slotStart.getTime() + slotDuration * 60000);
 
@@ -174,11 +165,11 @@ bookingForm.addEventListener("submit", async (e) => {
     }
   }
 
-  // Добавляем новый слот с статусом pending
+  // Добавляем бронирование в Firestore с корректным временем
   await addDoc(collection(db, "slots"), {
     time: startTime,
     status: "pending",
-    duration: durationHours * 60, // минуты
+    duration: durationHours * 60, // в минутах
     bookedBy: name,
     contact: contact,
   });
@@ -189,7 +180,7 @@ bookingForm.addEventListener("submit", async (e) => {
   await loadSlotsAndRenderCalendar();
 });
 
-// Открытие и закрытие модального окна
+// Открытие/закрытие модального окна
 openBookingBtn.addEventListener("click", () => {
   modal.style.display = "flex";
 });
