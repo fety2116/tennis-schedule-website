@@ -71,6 +71,14 @@
       top: 1rem;
       right: 1rem;
       background-color: #d32f2f;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #logoutBtn:hover {
+      background-color: #b71c1c;
     }
   </style>
 </head>
@@ -143,74 +151,8 @@
     </form>
   </section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-    // Твой Firebase config (замени на свои данные)
-    const firebaseConfig = {
-      apiKey: "AIzaSyAIz4Lcnioo1DAh_S11O1jKC5nyo_ggX5w",
-      authDomain: "tennis-schedule-ltc.firebaseapp.com",
-      projectId: "tennis-schedule-ltc",
-      storageBucket: "tennis-schedule-ltc.firebasestorage.app",
-      messagingSenderId: "913456855993",
-      appId: "1:913456855993:web:906283fedb4373bf291468"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // Защита страницы — если не залогинен, редирект на login.html
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        alert("Access denied. Please login.");
-        window.location.href = "login.html";
-      }
-    });
-
-    // Логика выхода из админки
-    const logoutBtn = document.getElementById("logoutBtn");
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      window.location.href = "login.html";
-    });
-
-    // Твой существующий скрипт генерации времени
-    const blockTime = document.getElementById("blockTime");
-
-    function generateTimeOptions() {
-      blockTime.innerHTML = "";
-      const startHour = 6,
-        startMinute = 30;
-      const endHour = 21,
-        endMinute = 0;
-
-      let current = new Date();
-      current.setHours(startHour, startMinute, 0, 0);
-
-      const endTime = new Date();
-      endTime.setHours(endHour, endMinute, 0, 0);
-
-      while (current <= endTime) {
-        const h = current.getHours().toString().padStart(2, "0");
-        const m = current.getMinutes().toString().padStart(2, "0");
-        const option = document.createElement("option");
-        option.value = `${h}:${m}`;
-        option.textContent = `${h}:${m}`;
-        blockTime.appendChild(option);
-
-        current.setMinutes(current.getMinutes() + 30);
-      }
-    }
-
-    generateTimeOptions();
-  </script>
-
   <script type="module" src="admin.js"></script>
 </body>
 </html>
+
 
