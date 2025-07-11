@@ -9,7 +9,6 @@
   }
 </script>
 
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -81,13 +80,14 @@
     }
 
     #blockTimeBtn {
-  margin-top: 1rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
+      margin-top: 1rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
   </style>
 </head>
+
 <body>
   <h1>Admin Panel</h1>
 
@@ -105,34 +105,28 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Записи будут добавлены через JS -->
+        <!-- Pending bookings will be added by JS -->
       </tbody>
     </table>
   </section>
 
   <section>
-  <h2>Pending Bookings</h2>
-  <table id="bookingsTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Contact</th><th>Date & Time</th><th>Duration</th><th>Status</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
-
-<section>
-  <h2>Confirmed Bookings</h2>
-  <table id="confirmedTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Contact</th><th>Date & Time</th><th>Duration</th><th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
+    <h2>Confirmed Bookings</h2>
+    <table id="confirmedTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Date & Time</th>
+          <th>Duration</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Confirmed bookings will be added by JS -->
+      </tbody>
+    </table>
+  </section>
 
   <section>
     <h2>Block Time Manually</h2>
@@ -159,10 +153,10 @@
       </select>
 
       <label for="blockStatus">Status:</label>
-        <select id="blockStatus" required>
+      <select id="blockStatus" required>
         <option value="blocked">Blocked</option>
         <option value="confirmed">Confirmed</option>
-        </select>
+      </select>
 
       <button type="submit" id="blockTimeBtn">Block Time</button>
     </form>
@@ -181,3 +175,4 @@
   <script type="module" src="admin.js"></script>
 </body>
 </html>
+
