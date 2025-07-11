@@ -1,4 +1,4 @@
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
 import {
   collection,
   query,
@@ -11,12 +11,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import {
-  getAuth,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const auth = getAuth();
 
 const bookingsTable = document.querySelector("#bookingsTable tbody");
 const confirmedTable = document.querySelector("#confirmedTable tbody");
@@ -26,14 +23,14 @@ const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 
-// Проверяем авторизацию пользователя и загружаем данные
+// Проверка авторизации
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // Пользователь авторизован — загружаем данные
+    // Пользователь авторизован
     loadPendingBookings();
     loadConfirmedBookings();
   } else {
-    // Пользователь не авторизован — перенаправляем на login
+    // Не авторизован — редирект на логин
     window.location.href = "login.html";
   }
 });
