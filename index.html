@@ -5,33 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lesson Booking</title>
 
-  <!-- Шрифт -->
+  <!-- Google font -->
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 </head>
 <body>
 
-  <!-- Верхняя черная полоска -->
+  <!-- Top black bar -->
   <div class="top-bar"></div>
 
-  <!-- Основной контент -->
+  <!-- Main content -->
   <main class="main-content">
     <div id="calendar"></div>
     <button id="openBooking" class="floating-booking-btn">Book Now</button>
   </main>
 
-  <!-- Модальное окно -->
-  <div id="modal" class="modal-overlay" style="display: none;">
+  <!-- Booking Modal -->
+  <div id="modal" class="modal-overlay" style="display:none;">
     <form id="bookingForm">
       <h2>Book a Lesson</h2>
       <div id="paymentRules" style="margin-bottom: 15px; font-size: 0.9rem; color: #333;">
-  <p><strong>Payment Instructions:</strong></p>
-  <ul>
-    <li>Payment should be made via e-transfer to the tennis club using the email:</li>  
-    lethtennisclub@gmail.com <br>
-  </ul>
-</div>
+        <p><strong>Payment Instructions:</strong></p>
+        <ul>
+          <li>Payment should be made via e-transfer to the tennis club using the email:<br><strong>lethtennisclub@gmail.com</strong></li>
+          <li>Include your name & contact in the note.</li>
+        </ul>
+      </div>
+
       <label for="bookingDate">Date:</label>
       <input type="date" id="bookingDate" required />
 
@@ -57,12 +58,61 @@
     </form>
   </div>
 
-  <!-- Нижняя черная полоска -->
+  <!-- Register Now Modal -->
+  <div id="registerModal" class="modal-overlay" style="display:none;">
+    <div id="registerContent" class="modal-content" style="background:white; padding: 1.5rem; border-radius: 12px; max-width: 500px; font-family: 'EB Garamond', serif; color: #333;">
+      <h3>Summer Camp Registration</h3>
+      <p>Our Summer Camp runs weekly during July and August. To register, please email us at <strong>lethtennisclub@gmail.com</strong> with your preferred weeks and participant details.</p>
+      <ul>
+        <li>Week 1: July 7 - July 11</li>
+        <li>Week 2: July 14 - July 18</li>
+        <li>Week 3: July 21 - July 25</li>
+        <li>Week 4: July 28 - August 1</li>
+        <li>Week 5: *August 5 - August 8</li>
+        <li>Week 6: *August 11 - August 15</li>
+      </ul>
+      <p>
+        <a href="https://www.tennislethbridge.ca/camps" target="_blank" rel="noopener noreferrer" 
+           style="color: #007700; text-decoration: underline; cursor: pointer;">
+          More info
+        </a>
+      </p>
+      <button id="closeRegister" style="background:#007700; color:white; border:none; padding:0.75rem 1.25rem; border-radius:6px; cursor:pointer; margin-top:1rem;">Close</button>
+    </div>
+  </div>
+
+  <!-- Get Membership Modal -->
+  <div id="membershipModal" class="modal-overlay" style="display:none;">
+    <div id="membershipContent" class="modal-content" style="background:white; padding: 1.5rem; border-radius: 12px; max-width: 500px; font-family: 'EB Garamond', serif; color: #333;">
+      <h3>Membership Plans & Payment</h3>
+      <p>Choose from the following membership plans:</p>
+      <ul>
+        <li>Junior (under 18): $35/month</li>
+        <li>College/University student (with ID): $100/month</li>
+        <li>Adult: $150/month</li>
+        <li>Senior (65+): $135/month</li>
+        <li>Couple: $260/month</li>
+        <li>Family: $320/month</li>
+        <li>Short term: $10/day or $60/month</li>
+      </ul>
+      <p>Payments accepted via e-transfer to <strong>lethtennisclub@gmail.com</strong>. Please include your name and membership plan in the note.</p>
+      </p>
+      <p>
+      <a href="https://www.tennislethbridge.ca/prices" target="_blank" rel="noopener noreferrer" 
+         style="color: #007700; text-decoration: underline; cursor: pointer;">
+        More info
+      </a>
+      </p>
+      <button id="closeMembership" style="background:#007700; color:white; border:none; padding:0.75rem 1.25rem; border-radius:6px; cursor:pointer; margin-top:1rem;">Close</button>
+    </div>
+  </div>
+
+  <!-- Bottom black bar -->
   <footer class="bottom-bar">
     <p>Contact: yana.fetisova271@gmail.com | +1 (587) 917-6473</p>
   </footer>
 
-  <!-- Скрипты -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
   <script type="module" src="firebase.js"></script>
@@ -70,3 +120,4 @@
 
 </body>
 </html>
+
