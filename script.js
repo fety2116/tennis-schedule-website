@@ -80,20 +80,21 @@ async function loadSlotsAndRenderCalendar() {
 
   if (calendar) calendar.destroy();
 
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "timeGridWeek",
-    headerToolbar: {
-      left: "prev,next today",
-      center: "title",
-      right: "timeGridWeek,timeGridDay"
-    },
-    slotDuration: "00:30:00",
-    slotMinTime: "06:00:00",
-    slotMaxTime: "21:00:00",
-    allDaySlot: false,
-    height: "100%",
-    events,
-    eventContent: function(arg) {
+calendar = new FullCalendar.Calendar(calendarEl, {
+  initialView: "timeGridWeek",
+  headerToolbar: {
+    left: "prev,next today",
+    center: "title",
+    right: "timeGridWeek,timeGridDay"
+  },
+  slotDuration: "00:30:00",
+  slotMinTime: "06:00:00",
+  slotMaxTime: "21:00:00",
+  allDaySlot: false,
+  height: "100%",
+  events,
+  eventBackgroundColor: "transparent", // 👈 ВАЖНО: убирает синюю рамку
+  eventContent: function(arg) {
       const container = document.createElement("div");
       container.style.fontSize = "0.85rem";
       container.style.lineHeight = "1.2";
