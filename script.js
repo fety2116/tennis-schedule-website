@@ -118,14 +118,6 @@ async function loadSlotsAndRenderCalendar() {
       container.style.fontSize = "0.85rem";
       container.style.lineHeight = "1.2";
 
-      //Old Dates
-      if (arg.event.end < new Date()) {
-  container.style.opacity = "0.5";         // полупрозрачность
-  container.style.backgroundColor = "#eee"; // фон чуть светлее
-        color = "#eee";
-}
-
-
       // Время обычным шрифтом
       const startTimeStr = arg.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       const endTimeStr = arg.event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
