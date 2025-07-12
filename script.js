@@ -40,6 +40,11 @@ function restrictPastDates() {
   bookingDateInput.min = today.toISOString().split("T")[0];
 }
 
+function isPastEvent(eventEnd) {
+  const now = new Date();
+  return eventEnd < now;
+}
+
 async function loadSlotsAndRenderCalendar() {
   const q = query(collection(db, "slots"), where("status", "!=", "rejected"));
   const snapshot = await getDocs(q);
@@ -55,31 +60,38 @@ async function loadSlotsAndRenderCalendar() {
     const durationMinutes = slot.duration || 30;
     const end = new Date(start.getTime() + durationMinutes * 60000);
 
+    // Проверяем, прошла ли дата события
+    const isPast = isPastEvent(end);
+
     // Цвета по статусам и типам
     let color = "#4caf50"; // зеленый по умолчанию (private lesson)
     let title = "Private Lesson";
 
-    if (slot.status === "pending") {
-      color = "#ff9800"; // оранжевый
-      title = "Pending";
-    } else if (slot.status === "confirmed") {
-      color = "#388e3c"; // средний зеленый (confirmed private)
-      title = "Private Lesson";
-    } else if (slot.status === "blocked") {
-      color = "#666666"; // серый для блоков
-      title = "Blocked / Unavailable";
-    } else if (slot.status === "summercamp") {
-      color = "#2e7d32"; // темный зеленый (летний лагерь)
-      title = "Summer Camp";
-    } else if (slot.status === "mens") {
-      color = "#4caf50"; // светло-зеленый (мужские)
-      title = "Men's Lesson";
-    } else if (slot.status === "womens") {
-      color = "#4caf50"; // светло-зеленый (женские)
-      title = "Women's Lesson";
-    } else if (slot.status === "kids") {
-      color = "#1b5e20"; // темный зеленый (детские)
-      title = "Kids Lesson";
+    if (isPast) {
+      color = "#d3d3d3"; // светло-серый фон для прошедших занятий
+    } else {
+      if (slot.status === "pending") {
+        color = "#ff9800"; // оранжевый
+        title = "Pending";
+      } else if (slot.status === "confirmed") {
+        color = "#388e3c"; // средний зеленый (confirmed private)
+        title = "Private Lesson";
+      } else if (slot.status === "blocked") {
+        color = "#666666"; // серый для блоков
+        title = "Blocked / Unavailable";
+      } else if (slot.status === "summercamp") {
+        color = "#2e7d32"; // темный зеленый (летний лагерь)
+        title = "Summer Camp";
+      } else if (slot.status === "mens") {
+        color = "#4caf50"; // светло-зеленый (мужские)
+        title = "Men's Lesson";
+      } else if (slot.status === "womens") {
+        color = "#4caf50"; // светло-зеленый (женские)
+        title = "Women's Lesson";
+      } else if (slot.status === "kids") {
+        color = "#1b5e20"; // темный зеленый (детские)
+        title = "Kids Lesson";
+      }
     }
 
     let extendedProps = {};
@@ -93,7 +105,10 @@ async function loadSlotsAndRenderCalendar() {
       start,
       end,
       color,
-      ...extendedProps
+      extendedProps: {
+        ...extendedProps,
+        isPast
+      }
     });
   });
 
@@ -114,7 +129,7 @@ async function loadSlotsAndRenderCalendar() {
     events,
     eventContent: function(arg) {
       const container = document.createElement("div");
-      container.style.color = "white";
+      container.style.color = arg.event.extendedProps.isPast ? "#555555" : "white"; // темно-серый для прошедших, белый для активных
       container.style.fontSize = "0.85rem";
       container.style.lineHeight = "1.2";
 
@@ -141,7 +156,7 @@ async function loadSlotsAndRenderCalendar() {
         link.textContent = arg.event.extendedProps.type === "summercamp" ? "Register now" : "Get membership";
         link.style.display = "block";
         link.style.marginTop = "4px";
-        link.style.color = "white";
+        link.style.color = arg.event.extendedProps.isPast ? "#555555" : "white";
         link.style.textDecoration = "underline";
         link.style.cursor = "pointer";
 
