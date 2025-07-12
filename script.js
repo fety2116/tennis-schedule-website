@@ -50,67 +50,69 @@ async function loadSlotsAndRenderCalendar() {
   const snapshot = await getDocs(q);
   const events = [];
 
-  snapshot.forEach(docSnap => {
-    const slot = docSnap.data();
-    if (slot.status === "rejected") return; // фильтр дополнительно
+snapshot.forEach(docSnap => {
+  const slot = docSnap.data();
+  if (slot.status === "rejected") return;
 
-    let start = slot.time?.toDate?.() || new Date(slot.time);
-    if (!start) return;
+  let start = slot.time?.toDate?.() || new Date(slot.time);
+  if (!start) return;
 
-    const durationMinutes = slot.duration || 30;
-    const end = new Date(start.getTime() + durationMinutes * 60000);
+  const durationMinutes = slot.duration || 30;
+  const end = new Date(start.getTime() + durationMinutes * 60000);
 
-    // Проверяем, прошла ли дата события
-    const isPast = isPastEvent(end);
+  const isPast = isPastEvent(end);
 
-    // Цвета по статусам и типам
-    let color = "#4caf50"; // зеленый по умолчанию (private lesson)
-    let title = "Private Lesson";
+  let color;
+  let title;
 
-    if (isPast) {
-      color = "#d3d3d3"; // светло-серый фон для прошедших занятий
-    } else {
-      if (slot.status === "pending") {
-        color = "#ff9800"; // оранжевый
-        title = "Pending";
-      } else if (slot.status === "confirmed") {
-        color = "#388e3c"; // средний зеленый (confirmed private)
-        title = "Private Lesson";
-      } else if (slot.status === "blocked") {
-        color = "#666666"; // серый для блоков
-        title = "Blocked / Unavailable";
-      } else if (slot.status === "summercamp") {
-        color = "#2e7d32"; // темный зеленый (летний лагерь)
-        title = "Summer Camp";
-      } else if (slot.status === "mens") {
-        color = "#4caf50"; // светло-зеленый (мужские)
-        title = "Men's Lesson";
-      } else if (slot.status === "womens") {
-        color = "#4caf50"; // светло-зеленый (женские)
-        title = "Women's Lesson";
-      } else if (slot.status === "kids") {
-        color = "#1b5e20"; // темный зеленый (детские)
-        title = "Kids Lesson";
-      }
+  if (slot.status === "pending") {
+    color = "#ff9800";
+    title = "Pending";
+  } else if (slot.status === "confirmed") {
+    color = "#388e3c";
+    title = "Private Lesson";
+  } else if (slot.status === "blocked") {
+    color = "#666666";
+    title = "Blocked / Unavailable";
+  } else if (slot.status === "summercamp") {
+    color = "#2e7d32";
+    title = "Summer Camp";
+  } else if (slot.status === "mens") {
+    color = "#4caf50";
+    title = "Men's Lesson";
+  } else if (slot.status === "womens") {
+    color = "#4caf50";
+    title = "Women's Lesson";
+  } else if (slot.status === "kids") {
+    color = "#1b5e20";
+    title = "Kids Lesson";
+  } else {
+    color = "#4caf50";
+    title = "Private Lesson";
+  }
+
+  if (isPast) {
+    color = "#d3d3d3";
+  }
+
+  let extendedProps = {};
+  if (["summercamp", "mens", "womens", "kids"].includes(slot.status)) {
+    extendedProps = { showLink: true, type: slot.status };
+  }
+
+  events.push({
+    id: docSnap.id,
+    title,
+    start,
+    end,
+    color,
+    extendedProps: {
+      ...extendedProps,
+      isPast
     }
-
-    let extendedProps = {};
-    if (["summercamp", "mens", "womens", "kids"].includes(slot.status)) {
-      extendedProps = { showLink: true, type: slot.status };
-    }
-
-    events.push({
-      id: docSnap.id,
-      title,
-      start,
-      end,
-      color,
-      extendedProps: {
-        ...extendedProps,
-        isPast
-      }
-    });
   });
+});
+
 
   if (calendar) calendar.destroy();
 
