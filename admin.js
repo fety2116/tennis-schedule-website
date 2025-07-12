@@ -7,7 +7,8 @@ import {
   updateDoc,
   doc,
   addDoc,
-  Timestamp
+  Timestamp,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -64,6 +65,29 @@ function generateTimeOptions() {
 }
 generateTimeOptions();
 
+// Функция для форматирования даты и времени в виде: July 11 2025, 6pm
+function formatDateTime(date) {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const monthName = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  let hour = date.getHours();
+  const minute = date.getMinutes();
+  const ampm = hour >= 12 ? "pm" : "am";
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  // Если минуты равны 0, не выводим, иначе выводим с ведущим нулём
+  const minuteStr = minute === 0 ? "" : ":" + (minute < 10 ? "0" + minute : minute);
+
+  return `${monthName} ${day} ${year}, ${hour}${minuteStr}${ampm}`;
+}
+
 // Загрузка pending заявок
 async function loadPendingBookings() {
   try {
@@ -101,7 +125,7 @@ async function loadPendingBookings() {
   }
 }
 
-// Загрузка confirmed заявок, отсортированных по дате и времени
+// Загрузка confirmed заявок с отформатированной датой
 async function loadConfirmedBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
@@ -128,7 +152,7 @@ async function loadConfirmedBookings() {
       row.innerHTML = `
         <td>${slot.bookedBy || ""}</td>
         <td>${slot.contact || ""}</td>
-        <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${formatDateTime(start)}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
       `;
@@ -211,8 +235,7 @@ blockForm.addEventListener("submit", async (e) => {
   }
 });
 
-import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"; // добавь, если ещё не импортировано
-
+// Очистка старых слотов
 document.getElementById("cleanupOldSlots").addEventListener("click", async () => {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -241,4 +264,3 @@ document.getElementById("cleanupOldSlots").addEventListener("click", async () =>
     alert("⚠️ Failed to clean up old slots.");
   }
 });
-
