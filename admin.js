@@ -210,3 +210,35 @@ blockForm.addEventListener("submit", async (e) => {
     alert("Failed to save slot. Check console.");
   }
 });
+
+import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"; // добавь, если ещё не импортировано
+
+document.getElementById("cleanupOldSlots").addEventListener("click", async () => {
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+  try {
+    const q = query(collection(db, "slots"));
+    const snapshot = await getDocs(q);
+    let deletedCount = 0;
+
+    for (const docSnap of snapshot.docs) {
+      const slot = docSnap.data();
+      const start = slot.time.toDate ? slot.time.toDate() : new Date(slot.time);
+      const end = new Date(start.getTime() + (slot.duration || 30) * 60000);
+
+      if (end < threeMonthsAgo) {
+        await deleteDoc(doc(db, "slots", docSnap.id));
+        deletedCount++;
+      }
+    }
+
+    alert(`✅ Deleted ${deletedCount} old slots.`);
+    await loadPendingBookings();
+    await loadConfirmedBookings();
+  } catch (err) {
+    console.error("Cleanup error:", err);
+    alert("⚠️ Failed to clean up old slots.");
+  }
+});
+
