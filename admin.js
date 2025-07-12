@@ -21,6 +21,28 @@ const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 const logoutBtn = document.getElementById("logoutBtn");
 
+// Функция для форматирования даты и времени
+function formatDateTime(date) {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const monthName = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  let hour = date.getHours();
+  const minute = date.getMinutes();
+  const ampm = hour >= 12 ? "pm" : "am";
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  const minuteStr = minute === 0 ? "" : ":" + (minute < 10 ? "0" + minute : minute);
+
+  return `${monthName} ${day} ${year}, ${hour}${minuteStr}${ampm}`;
+}
+
 // Проверка авторизации и загрузка данных
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -65,29 +87,6 @@ function generateTimeOptions() {
 }
 generateTimeOptions();
 
-// Функция для форматирования даты и времени в виде: July 11 2025, 6pm
-function formatDateTime(date) {
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const monthName = months[date.getMonth()];
-  const day = date.getDate();
-  const year = date.getFullYear();
-
-  let hour = date.getHours();
-  const minute = date.getMinutes();
-  const ampm = hour >= 12 ? "pm" : "am";
-
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-
-  // Если минуты равны 0, не выводим, иначе выводим с ведущим нулём
-  const minuteStr = minute === 0 ? "" : ":" + (minute < 10 ? "0" + minute : minute);
-
-  return `${monthName} ${day} ${year}, ${hour}${minuteStr}${ampm}`;
-}
-
 // Загрузка pending заявок
 async function loadPendingBookings() {
   try {
@@ -108,7 +107,7 @@ async function loadPendingBookings() {
       row.innerHTML = `
         <td>${slot.bookedBy || ""}</td>
         <td>${slot.contact || ""}</td>
-        <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${formatDateTime(start)}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
         <td>
@@ -125,7 +124,7 @@ async function loadPendingBookings() {
   }
 }
 
-// Загрузка confirmed заявок с отформатированной датой
+// Загрузка confirmed заявок, отсортированных по дате и времени
 async function loadConfirmedBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
@@ -235,7 +234,7 @@ blockForm.addEventListener("submit", async (e) => {
   }
 });
 
-// Очистка старых слотов
+// Удаление старых слотов (старше 3 месяцев)
 document.getElementById("cleanupOldSlots").addEventListener("click", async () => {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
