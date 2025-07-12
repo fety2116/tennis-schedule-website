@@ -122,6 +122,7 @@ async function loadSlotsAndRenderCalendar() {
       if (arg.event.end < new Date()) {
   container.style.opacity = "0.5";         // полупрозрачность
   container.style.backgroundColor = "#eee"; // фон чуть светлее
+        color = "#eee";
 }
 
 
