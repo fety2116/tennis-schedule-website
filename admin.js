@@ -1,7 +1,14 @@
-// admin.js
 import { db, auth } from "./firebase.js";
 import {
-  collection, query, where, getDocs, updateDoc, doc, addDoc, Timestamp
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+  addDoc,
+  Timestamp,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -13,6 +20,28 @@ const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 const logoutBtn = document.getElementById("logoutBtn");
+
+// Функция для форматирования даты и времени
+function formatDateTime(date) {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const monthName = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  let hour = date.getHours();
+  const minute = date.getMinutes();
+  const ampm = hour >= 12 ? "pm" : "am";
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  const minuteStr = minute === 0 ? "" : ":" + (minute < 10 ? "0" + minute : minute);
+
+  return `${monthName} ${day} ${year}, ${hour}${minuteStr}${ampm}`;
+}
 
 // Проверка авторизации и загрузка данных
 onAuthStateChanged(auth, (user) => {
@@ -31,7 +60,7 @@ logoutBtn.addEventListener("click", async () => {
   window.location.href = "login.html";
 });
 
-// Генерация опций времени для блокировки
+// Генерация опций времени для блокировки/ручного бронирования
 function generateTimeOptions() {
   blockTime.innerHTML = "";
   const startHour = 6,
@@ -78,7 +107,7 @@ async function loadPendingBookings() {
       row.innerHTML = `
         <td>${slot.bookedBy || ""}</td>
         <td>${slot.contact || ""}</td>
-        <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${formatDateTime(start)}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
         <td>
@@ -95,7 +124,7 @@ async function loadPendingBookings() {
   }
 }
 
-// Загрузка confirmed заявок
+// Загрузка confirmed заявок, отсортированных по дате и времени
 async function loadConfirmedBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
@@ -107,7 +136,14 @@ async function loadConfirmedBookings() {
       return;
     }
 
-    snapshot.forEach((docSnap) => {
+    // Сортируем документы по дате
+    const sortedDocs = snapshot.docs.slice().sort((a, b) => {
+      const aDate = a.data().time.toDate();
+      const bDate = b.data().time.toDate();
+      return aDate - bDate;
+    });
+
+    sortedDocs.forEach((docSnap) => {
       const slot = docSnap.data();
       const start = slot.time.toDate();
       const row = document.createElement("tr");
@@ -115,7 +151,7 @@ async function loadConfirmedBookings() {
       row.innerHTML = `
         <td>${slot.bookedBy || ""}</td>
         <td>${slot.contact || ""}</td>
-        <td>${start.toLocaleDateString()} ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${formatDateTime(start)}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
       `;
@@ -152,17 +188,17 @@ bookingsTable.addEventListener("click", async (e) => {
   }
 });
 
-// Обработка формы блокировки времени
+// Обработка формы блокировки времени / ручного бронирования
 blockForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const dateStr = blockDate.value;
   const timeStr = blockTime.value; // "HH:MM"
   const duration = parseInt(blockDuration.value);
-  const status = blockStatus.value;
+  const status = blockStatus.value; // объединенный статус/тип урока
 
   if (!dateStr || !timeStr || !duration || duration <= 0 || !status) {
-    alert("Please fill all fields with valid data.");
+    alert("Please fill all required fields.");
     return;
   }
 
@@ -170,7 +206,6 @@ blockForm.addEventListener("submit", async (e) => {
   const hour = parseInt(hourStr);
   const minute = parseInt(minuteStr);
 
-  // Проверка времени в нужном диапазоне
   const totalMinutes = hour * 60 + minute;
   if (totalMinutes < (6 * 60 + 30) || totalMinutes > (21 * 60)) {
     alert("Time must be between 06:30 and 21:00.");
@@ -187,7 +222,7 @@ blockForm.addEventListener("submit", async (e) => {
       status
     });
 
-    alert(`Time with status "${status}" saved successfully.`);
+    alert(`Slot with status/type "${status}" saved successfully.`);
     blockForm.reset();
     blockDuration.value = "30";
 
@@ -196,5 +231,35 @@ blockForm.addEventListener("submit", async (e) => {
   } catch (error) {
     console.error("Error saving slot:", error);
     alert("Failed to save slot. Check console.");
+  }
+});
+
+// Удаление старых слотов (старше 3 месяцев)
+document.getElementById("cleanupOldSlots").addEventListener("click", async () => {
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+  try {
+    const q = query(collection(db, "slots"));
+    const snapshot = await getDocs(q);
+    let deletedCount = 0;
+
+    for (const docSnap of snapshot.docs) {
+      const slot = docSnap.data();
+      const start = slot.time.toDate ? slot.time.toDate() : new Date(slot.time);
+      const end = new Date(start.getTime() + (slot.duration || 30) * 60000);
+
+      if (end < threeMonthsAgo) {
+        await deleteDoc(doc(db, "slots", docSnap.id));
+        deletedCount++;
+      }
+    }
+
+    alert(`✅ Deleted ${deletedCount} old slots.`);
+    await loadPendingBookings();
+    await loadConfirmedBookings();
+  } catch (err) {
+    console.error("Cleanup error:", err);
+    alert("⚠️ Failed to clean up old slots.");
   }
 });

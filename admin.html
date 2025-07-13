@@ -124,7 +124,7 @@
   </section>
 
   <section>
-    <h2>Block Time Manually</h2>
+    <h2>Block Time Manually / Manual Booking</h2>
     <form id="blockForm">
       <label for="blockDate">Date:</label>
       <input type="date" id="blockDate" required />
@@ -141,18 +141,28 @@
         <option value="180">3 hours</option>
       </select>
 
-      <label for="blockStatus">Status:</label>
+      <label for="blockStatus">Status / Lesson Type:</label>
       <select id="blockStatus" required>
+        <option value="">-- Select status or lesson type --</option>
         <option value="blocked">Blocked</option>
         <option value="confirmed">Confirmed</option>
+        <option value="summercamp">Summer Camp</option>
+        <option value="mens">Men's Lesson</option>
+        <option value="womens">Women's Lesson</option>
+        <option value="kids">Kids Lesson</option>
+        <option value="private">Private Lesson</option>
+        <option value="group">Group Lesson</option>
       </select>
 
-      <button type="submit" id="blockTimeBtn">Block Time</button>
+      <button type="submit" id="blockTimeBtn">Save Booking / Block</button>
     </form>
   </section>
+
+  <section>
+  <h2>Maintenance</h2>
+  <button id="cleanupOldSlots">🧹 Delete Old Slots (older than 3 months)</button>
+</section>
 
   <script type="module" src="admin.js"></script>
 </body>
 </html>
-
-
