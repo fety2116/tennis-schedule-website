@@ -14,36 +14,27 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 
 const bookingsTable = document.querySelector("#bookingsTable tbody");
 const confirmedTable = document.querySelector("#confirmedTable tbody");
+const pastConfirmedTable = document.querySelector("#pastConfirmedTable tbody");
+
 const blockForm = document.getElementById("blockForm");
 const blockDate = document.getElementById("blockDate");
 const blockTime = document.getElementById("blockTime");
 const blockDuration = document.getElementById("blockDuration");
 const blockStatus = document.getElementById("blockStatus");
 const logoutBtn = document.getElementById("logoutBtn");
+const cleanupBtn = document.getElementById("cleanupOldSlots");
 
-// Функция для форматирования даты и времени
+// Форматирование даты-времени
 function formatDateTime(date) {
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const monthName = months[date.getMonth()];
-  const day = date.getDate();
-  const year = date.getFullYear();
-
-  let hour = date.getHours();
-  const minute = date.getMinutes();
-  const ampm = hour >= 12 ? "pm" : "am";
-
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-
-  const minuteStr = minute === 0 ? "" : ":" + (minute < 10 ? "0" + minute : minute);
-
-  return `${monthName} ${day} ${year}, ${hour}${minuteStr}${ampm}`;
+  const options = { 
+    month: "short", day: "numeric", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+    hour12: true
+  };
+  return date.toLocaleString(undefined, options);
 }
 
-// Проверка авторизации и загрузка данных
+// Проверка авторизации
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     alert("Access denied. Please login.");
@@ -60,17 +51,14 @@ logoutBtn.addEventListener("click", async () => {
   window.location.href = "login.html";
 });
 
-// Генерация опций времени для блокировки/ручного бронирования
+// Генерация опций времени с 06:30 до 21:00 с шагом 30 мин
 function generateTimeOptions() {
   blockTime.innerHTML = "";
-  const startHour = 6,
-    startMinute = 30;
-  const endHour = 21,
-    endMinute = 0;
+  const startHour = 6, startMinute = 30;
+  const endHour = 21, endMinute = 0;
 
   let current = new Date();
   current.setHours(startHour, startMinute, 0, 0);
-
   const endTime = new Date();
   endTime.setHours(endHour, endMinute, 0, 0);
 
@@ -81,121 +69,127 @@ function generateTimeOptions() {
     option.value = `${h}:${m}`;
     option.textContent = `${h}:${m}`;
     blockTime.appendChild(option);
-
     current.setMinutes(current.getMinutes() + 30);
   }
 }
 generateTimeOptions();
 
-// Загрузка pending заявок
+// Загрузка pending bookings
 async function loadPendingBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "pending"));
     const snapshot = await getDocs(q);
-
     bookingsTable.innerHTML = "";
+
     if (snapshot.empty) {
       bookingsTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No pending bookings</td></tr>`;
       return;
     }
 
-    snapshot.forEach((docSnap) => {
+    snapshot.forEach(docSnap => {
       const slot = docSnap.data();
-      const start = slot.time.toDate();
       const row = document.createElement("tr");
-
       row.innerHTML = `
         <td>${slot.bookedBy || ""}</td>
         <td>${slot.contact || ""}</td>
-        <td>${formatDateTime(start)}</td>
+        <td>${formatDateTime(slot.time.toDate())}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
         <td>
           <button class="confirm" data-id="${docSnap.id}">Confirm</button>
           <button class="reject" data-id="${docSnap.id}">Reject</button>
+          <button class="delete-pending" data-id="${docSnap.id}">Delete</button>
         </td>
       `;
-
       bookingsTable.appendChild(row);
     });
-  } catch (error) {
-    console.error("Error loading pending bookings:", error);
-    alert("Failed to load pending bookings. Check console.");
+  } catch (err) {
+    console.error("Error loading pending bookings:", err);
+    alert("Failed to load pending bookings.");
   }
 }
 
-// Загрузка confirmed заявок, отсортированных по дате и времени
+// Загрузка confirmed bookings с разделением на будущие и прошлые
 async function loadConfirmedBookings() {
   try {
     const q = query(collection(db, "slots"), where("status", "==", "confirmed"));
     const snapshot = await getDocs(q);
 
     confirmedTable.innerHTML = "";
+    pastConfirmedTable.innerHTML = "";
+
+    const now = new Date();
+
     if (snapshot.empty) {
-      confirmedTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
+      confirmedTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No confirmed bookings</td></tr>`;
+      pastConfirmedTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No past confirmed bookings</td></tr>`;
       return;
     }
 
-    // Сортируем документы по дате
-    const sortedDocs = snapshot.docs.slice().sort((a, b) => {
-      const aDate = a.data().time.toDate();
-      const bDate = b.data().time.toDate();
-      return aDate - bDate;
-    });
-
-    sortedDocs.forEach((docSnap) => {
+    snapshot.forEach(docSnap => {
       const slot = docSnap.data();
-      const start = slot.time.toDate();
-      const row = document.createElement("tr");
+      const slotDate = slot.time.toDate();
+      const isPast = slotDate < now;
 
+      const row = document.createElement("tr");
       row.innerHTML = `
         <td>${slot.bookedBy || ""}</td>
         <td>${slot.contact || ""}</td>
-        <td>${formatDateTime(start)}</td>
+        <td>${formatDateTime(slotDate)}</td>
         <td>${slot.duration} min</td>
         <td>${slot.status}</td>
+        <td><button class="delete" data-id="${docSnap.id}">Delete</button></td>
       `;
 
-      confirmedTable.appendChild(row);
+      if (isPast) {
+        pastConfirmedTable.appendChild(row);
+      } else {
+        confirmedTable.appendChild(row);
+      }
     });
-  } catch (error) {
-    console.error("Error loading confirmed bookings:", error);
-    alert("Failed to load confirmed bookings. Check console.");
+  } catch (err) {
+    console.error("Error loading confirmed bookings:", err);
+    alert("Failed to load confirmed bookings.");
   }
 }
 
-// Обработка кнопок Confirm и Reject
-bookingsTable.addEventListener("click", async (e) => {
+// Обработчик кнопок Confirm, Reject и Delete
+document.body.addEventListener("click", async (e) => {
   const id = e.target.dataset.id;
   if (!id) return;
 
-  try {
-    const docRef = doc(db, "slots", id);
+  const docRef = doc(db, "slots", id);
 
+  try {
     if (e.target.classList.contains("confirm")) {
       await updateDoc(docRef, { status: "confirmed" });
     } else if (e.target.classList.contains("reject")) {
       await updateDoc(docRef, { status: "rejected" });
-    } else {
-      return;
+    } else if (e.target.classList.contains("delete-pending")) {
+      if (confirm("Are you sure you want to delete this pending booking?")) {
+        await deleteDoc(docRef);
+      }
+    } else if (e.target.classList.contains("delete")) {
+      if (confirm("Are you sure you want to delete this confirmed booking?")) {
+        await deleteDoc(docRef);
+      }
     }
-
     await loadPendingBookings();
     await loadConfirmedBookings();
-  } catch (error) {
-    console.error("Error updating booking status:", error);
-    alert("Failed to update booking status. Check console.");
+  } catch (err) {
+    console.error("Error handling action:", err);
+    alert("An error occurred. Check console.");
   }
 });
 
-// Обработка формы блокировки времени / ручного бронирования
+// Обработка формы блокировки / ручного бронирования
 blockForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const dateStr = blockDate.value;
-  const timeStr = blockTime.value; // "HH:MM"
+  const timeStr = blockTime.value;
   const duration = parseInt(blockDuration.value);
-  const status = blockStatus.value; // объединенный статус/тип урока
+  const status = blockStatus.value;
 
   if (!dateStr || !timeStr || !duration || duration <= 0 || !status) {
     alert("Please fill all required fields.");
@@ -221,21 +215,19 @@ blockForm.addEventListener("submit", async (e) => {
       duration,
       status
     });
-
     alert(`Slot with status/type "${status}" saved successfully.`);
     blockForm.reset();
     blockDuration.value = "30";
-
     await loadPendingBookings();
     await loadConfirmedBookings();
-  } catch (error) {
-    console.error("Error saving slot:", error);
+  } catch (err) {
+    console.error("Error saving slot:", err);
     alert("Failed to save slot. Check console.");
   }
 });
 
 // Удаление старых слотов (старше 3 месяцев)
-document.getElementById("cleanupOldSlots").addEventListener("click", async () => {
+cleanupBtn.addEventListener("click", async () => {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
