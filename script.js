@@ -152,7 +152,7 @@ snapshot.forEach(docSnap => {
       titleEl.style.textShadow = "none";
       container.appendChild(titleEl);
 
-      if (arg.event.extendedProps.showLink) {
+      if (arg.event.extendedProps.showLink && !arg.event.extendedProps.isPast) {
         const link = document.createElement("a");
         link.href = "#";
         link.textContent = arg.event.extendedProps.type === "summercamp" ? "Register now" : "Get membership";
