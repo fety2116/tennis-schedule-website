@@ -50,69 +50,68 @@ async function loadSlotsAndRenderCalendar() {
   const snapshot = await getDocs(q);
   const events = [];
 
-snapshot.forEach(docSnap => {
-  const slot = docSnap.data();
-  if (slot.status === "rejected") return;
+  snapshot.forEach(docSnap => {
+    const slot = docSnap.data();
+    if (slot.status === "rejected") return;
 
-  let start = slot.time?.toDate?.() || new Date(slot.time);
-  if (!start) return;
+    let start = slot.time?.toDate?.() || new Date(slot.time);
+    if (!start) return;
 
-  const durationMinutes = slot.duration || 30;
-  const end = new Date(start.getTime() + durationMinutes * 60000);
+    const durationMinutes = slot.duration || 30;
+    const end = new Date(start.getTime() + durationMinutes * 60000);
 
-  const isPast = isPastEvent(end);
+    const isPast = isPastEvent(end);
 
-  let color;
-  let title;
+    let color;
+    let title;
 
-  if (slot.status === "pending") {
-    color = "#ff9800";
-    title = "Pending";
-  } else if (slot.status === "confirmed") {
-    color = "#388e3c";
-    title = "Private Lesson";
-  } else if (slot.status === "blocked") {
-    color = "#666666";
-    title = "Blocked / Unavailable";
-  } else if (slot.status === "summercamp") {
-    color = "#2e7d32";
-    title = "Summer Camp";
-  } else if (slot.status === "mens") {
-    color = "#4caf50";
-    title = "Men's Lesson";
-  } else if (slot.status === "womens") {
-    color = "#4caf50";
-    title = "Women's Lesson";
-  } else if (slot.status === "kids") {
-    color = "#1b5e20";
-    title = "Kids Lesson";
-  } else {
-    color = "#4caf50";
-    title = "Private Lesson";
-  }
-
-  if (isPast) {
-    color = "#d3d3d3";
-  }
-
-  let extendedProps = {};
-  if (["summercamp", "mens", "womens", "kids"].includes(slot.status)) {
-    extendedProps = { showLink: true, type: slot.status };
-  }
-
-  events.push({
-    id: docSnap.id,
-    title,
-    start,
-    end,
-    color,
-    extendedProps: {
-      ...extendedProps,
-      isPast
+    if (slot.status === "pending") {
+      color = "#ff9800";
+      title = "Pending";
+    } else if (slot.status === "confirmed") {
+      color = "#388e3c";
+      title = "Private Lesson";
+    } else if (slot.status === "blocked") {
+      color = "#666666";
+      title = "Blocked / Unavailable";
+    } else if (slot.status === "summercamp") {
+      color = "#2e7d32";
+      title = "Summer Camp";
+    } else if (slot.status === "mens") {
+      color = "#4caf50";
+      title = "Men's Lesson";
+    } else if (slot.status === "womens") {
+      color = "#4caf50";
+      title = "Women's Lesson";
+    } else if (slot.status === "kids") {
+      color = "#1b5e20";
+      title = "Kids Lesson";
+    } else {
+      color = "#4caf50";
+      title = "Private Lesson";
     }
-  });
-});
 
+    if (isPast) {
+      color = "#d3d3d3";
+    }
+
+    let extendedProps = {};
+    if (["summercamp", "mens", "womens", "kids"].includes(slot.status)) {
+      extendedProps = { showLink: true, type: slot.status };
+    }
+
+    events.push({
+      id: docSnap.id,
+      title,
+      start,
+      end,
+      color,
+      extendedProps: {
+        ...extendedProps,
+        isPast
+      }
+    });
+  });
 
   if (calendar) calendar.destroy();
 
@@ -125,61 +124,90 @@ snapshot.forEach(docSnap => {
     },
     slotDuration: "00:30:00",
     slotMinTime: "06:00:00",
-    slotMaxTime: "21:00:00",
+    slotMaxTime: "22:00:00",
     allDaySlot: false,
     height: "100%",
     events,
     eventContent: function(arg) {
-      const container = document.createElement("div");
-      container.style.color = arg.event.extendedProps.isPast ? "#555555" : "white"; // темно-серый для прошедших, белый для активных
-      container.style.fontSize = "0.85rem";
-      container.style.lineHeight = "1.2";
+  const container = document.createElement("div");
+  container.style.color = arg.event.extendedProps.isPast ? "#555555" : "white";
+  container.style.fontSize = "0.85rem";
+  container.style.lineHeight = "1.2";
+  container.style.borderRadius = "6px";
+  container.style.backgroundColor = arg.event.backgroundColor || arg.event.color || "#2e7d32";
 
-      // Время обычным шрифтом
-      const startTimeStr = arg.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      const endTimeStr = arg.event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  // Ограничим высоту и обрежем всё лишнее
+  container.style.maxHeight = "100%";
+  container.style.overflow = "hidden";
 
-      const timeEl = document.createElement("div");
-      timeEl.textContent = `${startTimeStr} - ${endTimeStr}`;
-      timeEl.style.fontWeight = "400"; // обычный шрифт для времени
-      timeEl.style.textShadow = "none";
-      container.appendChild(timeEl);
+  // Сделаем, чтобы текст не переносился на следующую строку и обрезался с троеточием
+  container.style.whiteSpace = "nowrap";
+  container.style.textOverflow = "ellipsis";
 
-      // Заголовок жирным
-      const titleEl = document.createElement("div");
-      titleEl.textContent = arg.event.title;
-      titleEl.style.fontWeight = "500"; // жирный
-      titleEl.style.textShadow = "none";
-      container.appendChild(titleEl);
+  // Время
+  const startTimeStr = arg.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  const endTimeStr = arg.event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  const timeEl = document.createElement("div");
+  timeEl.textContent = `${startTimeStr} - ${endTimeStr}`;
 
-      if (arg.event.extendedProps.showLink && !arg.event.extendedProps.isPast) {
-        const link = document.createElement("a");
-        link.href = "#";
-        link.textContent = arg.event.extendedProps.type === "summercamp" ? "Register now" : "Get membership";
-        link.style.display = "block";
-        link.style.marginTop = "4px";
-        link.style.color = arg.event.extendedProps.isPast ? "#555555" : "white";
-        link.style.textDecoration = "underline";
-        link.style.cursor = "pointer";
+  // Ограничим overflow для времени
+  timeEl.style.whiteSpace = "nowrap";
+  timeEl.style.textOverflow = "ellipsis";
+  timeEl.style.overflow = "hidden";
 
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          if (arg.event.extendedProps.type === "summercamp") {
-            registerModal.style.display = "flex";
-          } else {
-            membershipModal.style.display = "flex";
-          }
-        });
+  timeEl.style.fontWeight = "400";
+  container.appendChild(timeEl);
 
-        container.appendChild(link);
+  // Заголовок
+  const titleEl = document.createElement("div");
+  titleEl.textContent = arg.event.title;
+
+  // Ограничим overflow для заголовка
+  titleEl.style.whiteSpace = "nowrap";
+  titleEl.style.textOverflow = "ellipsis";
+  titleEl.style.overflow = "hidden";
+
+  titleEl.style.fontWeight = "400";
+  container.appendChild(titleEl);
+
+  // Ссылка, если нужна и не вмещается — она тоже обрежется
+  if (arg.event.extendedProps.showLink && !arg.event.extendedProps.isPast) {
+    const link = document.createElement("a");
+    link.href = "#";
+    link.textContent = arg.event.extendedProps.type === "summercamp" ? "Register now" : "Get membership";
+    link.style.color = "white";
+    link.style.textDecoration = "underline";
+    link.style.display = "inline-block";
+
+    // Ссылка может быть обрезана, так что добавим max width и обрезку
+    link.style.maxWidth = "100%";
+    link.style.whiteSpace = "nowrap";
+    link.style.textOverflow = "ellipsis";
+    link.style.overflow = "hidden";
+
+    link.style.marginTop = "4px";
+    link.style.cursor = "pointer";
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (arg.event.extendedProps.type === "summercamp") {
+        registerModal.style.display = "flex";
+      } else {
+        membershipModal.style.display = "flex";
       }
+    });
 
-      return { domNodes: [container] };
+    container.appendChild(link);
+  }
+
+  return { domNodes: [container] };
     }
   });
 
   calendar.render();
 }
+
+
 
 bookingForm.addEventListener("submit", async (e) => {
   e.preventDefault();
