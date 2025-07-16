@@ -126,27 +126,39 @@ async function loadConfirmedBookings() {
       return;
     }
 
-    snapshot.forEach(docSnap => {
-      const slot = docSnap.data();
-      const slotDate = slot.time.toDate();
-      const isPast = slotDate < now;
+const futureConfirmed = [];
+const pastConfirmed = [];
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${slot.bookedBy || ""}</td>
-        <td>${slot.contact || ""}</td>
-        <td>${formatDateTime(slotDate)}</td>
-        <td>${slot.duration} min</td>
-        <td>${slot.status}</td>
-        <td><button class="delete" data-id="${docSnap.id}">Delete</button></td>
-      `;
+snapshot.forEach(docSnap => {
+  const slot = docSnap.data();
+  const slotDate = slot.time.toDate();
+  const isPast = slotDate < now;
 
-      if (isPast) {
-        pastConfirmedTable.appendChild(row);
-      } else {
-        confirmedTable.appendChild(row);
-      }
-    });
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${slot.bookedBy || ""}</td>
+    <td>${slot.contact || ""}</td>
+    <td>${formatDateTime(slotDate)}</td>
+    <td>${slot.duration} min</td>
+    <td>${slot.status}</td>
+    <td><button class="delete" data-id="${docSnap.id}">Delete</button></td>
+  `;
+
+  if (isPast) {
+    pastConfirmed.push({ date: slotDate, row });
+  } else {
+    futureConfirmed.push({ date: slotDate, row });
+  }
+});
+
+// Сортируем оба массива по дате
+futureConfirmed.sort((a, b) => a.date - b.date);
+pastConfirmed.sort((a, b) => a.date - b.date);
+
+// Добавляем отсортированные строки в таблицы
+futureConfirmed.forEach(entry => confirmedTable.appendChild(entry.row));
+pastConfirmed.forEach(entry => pastConfirmedTable.appendChild(entry.row));
+
   } catch (err) {
     console.error("Error loading confirmed bookings:", err);
     alert("Failed to load confirmed bookings.");
