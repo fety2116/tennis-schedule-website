@@ -3,16 +3,17 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'EB Garamond', serif; /* твой выбранный шрифт */
+  font-family: 'EB Garamond', serif;
   background: #f9f9fb;
   color: #333;
-  overflow: hidden; /* запрещаем скролл страницы */
+  /* Убери overflow: hidden, чтобы страница могла скроллиться */
 }
+
 
 /* Верхняя черная тонкая полоска */
 .top-bar {
   height: 20px;
-  background-color: #000000;
+  background-color: #14532d;
   width: 100%;
   position: fixed;
   top: 0;
@@ -23,12 +24,12 @@ html, body {
 /* Нижняя черная широкая полоска */
 .bottom-bar {
   height: 60px;
-  background-color: #000000;
+  background-color: #0b3d1a;
   width: 100%;
   position: fixed;
   bottom: 0;
   left: 0;
-  color: #3a9b3f; /* зеленый цвет */
+  color: #dbe7cf; /* зеленый цвет */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -39,29 +40,46 @@ html, body {
 
 /* Основной контент между полосками */
 .main-content {
-  position: fixed;
-  top: 20px;    /* ниже верхней полоски */
-  bottom: 60px; /* выше нижней полоски */
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white; /* или #004400 если хочешь зеленый фон */
+  margin-top: 20px;
+  margin-bottom: 60px;
   padding: 1rem;
-  overflow: hidden; /* важное, чтобы не было скролла */
+  background: white;
+  min-height: calc(100vh - 80px);
+
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: flex-start;
+
+  /* Добавь, чтобы контент растягивался по высоте */
+  height: calc(100vh - 80px);
 }
+
+.info-panel {
+  width: 280px; /* ширина колонки с инфо */
+  font-family: 'EB Garamond', serif;
+  color: #004400;
+  font-size: 0.95rem;
+  line-height: 1.4;
+
+  padding-bottom: 60px; /* Добавь отступ снизу, равный высоте футера */
+}
+
 
 /* Календарь */
 #calendar {
+  flex-grow: 1;
   max-width: 1200px;
   width: 100%;
-  height: 100%;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  font-size: 15px; /* уменьшенный шрифт */
-  overflow: hidden;
+  font-size: 15px;
+
+  /* важная высота, чтобы календарь виделся */
+  height: 100%;
 }
+
+
 
 /* Таймслоты и ячейки */
 .fc-daygrid-day {
