@@ -219,13 +219,15 @@ html, body {
     flex-direction: column;
   }
 
-  .info-panel {
-    width: 100%;
-    margin-bottom: 1rem;
+  /* Календарь будет идти первым */
+  #calendar {
+    order: 1;
   }
 
-  #calendar {
+  /* Инфо панель — второй */
+  .info-panel {
+    order: 2;
     width: 100%;
-    min-height: 400px;
+    margin-bottom: 1rem;
   }
 }
