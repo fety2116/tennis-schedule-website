@@ -1,6 +1,5 @@
 /* Base reset и шрифты */
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'EB Garamond', serif;
@@ -40,20 +39,17 @@ html, body {
 
 /* Основной контент между полосками */
 .main-content {
-  margin-top: 20px;
-  margin-bottom: 60px;
-  padding: 1rem;
-  background: white;
-  min-height: calc(100vh - 80px);
-
   display: flex;
   flex-direction: row;
   gap: 2rem;
   align-items: flex-start;
-
-  /* Добавь, чтобы контент растягивался по высоте */
-  height: calc(100vh - 80px);
+  padding: 1rem;
+  margin-top: 20px;
+  margin-bottom: 80px; /* для футера */
+  flex-wrap: wrap;
 }
+
+
 
 .info-panel {
   width: 280px; /* ширина колонки с инфо */
@@ -68,17 +64,13 @@ html, body {
 
 /* Календарь */
 #calendar {
+  min-height: 650px;
+  height: auto;
   flex-grow: 1;
-  max-width: 1200px;
   width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  font-size: 15px;
-
-  /* важная высота, чтобы календарь виделся */
-  height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
-
 
 
 /* Таймслоты и ячейки */
@@ -217,4 +209,23 @@ html, body {
   font-family: 'EB Garamond', serif;
   font-weight: 600;
   font-size: 20px !important;
+}
+
+/* Базовые стили остались */
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .info-panel {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  #calendar {
+    width: 100%;
+    min-height: 400px;
+  }
 }
